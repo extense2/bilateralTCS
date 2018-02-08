@@ -17,6 +17,20 @@
  *  
  *  Do you realize the similarities between the two sides? the FSR and the flex sensors. You cound just write one master function to sample and transmit. 
  *  bearing in mind that FSR needs lower resolution. 
+ *  
+ *  
+ *  On ROBOT code: 
+ *    use byte unstead of int for FSR[i] ? 
+ *    FSR is currently int, so can be negative. 
+ *    
+ *  Well, FSR is int in the glove code as well... so why are the -1's displayed as 255?   
+ *  
+ *  What's the BTserial buffer size? 64KB?
+ *    As the robot transmits data, this is stored in a buffer. 
+ *    When BTserial.read() is called, if reads from that buffer, emptying one char at a time. 
+ *    If you are filling the buffer faster than you are emptying it, then you will lose data...right?
+ *    https://internetofhomethings.com/homethings/?p=927
+ *  
  */
 
 #include <Wire.h>
@@ -81,97 +95,74 @@ void setup() {
   Serial.println("Libraries and Effects selected.");
 }
 
-/*
-void loop(){
-  while(i<5){
-    int temp = BTserial.read();
-    switch(temp){
-      case 222:   data = 1;
-      break;
 
-      case 255:   // do nothing      
-      break;
-
-      case -1:    // do nothing
-      break;
-
-      default:    // valid data
-        if(data){
-          FSR[i]=temp;
-          Serial.print(FSR[i]);
-          Serial.print('\t');
-          i++;
-//
-//      if (FSR[i] > 5){ // if FSR pressed
-////        tcaselect(Channel[i]);
-////        delayValue[i]=sensor2delay(FSR[i]);
-////        currentMillis[i] = millis();
-//        if(currentMillis[i] - previousMillis[i] > delayValue[i]){
-////          tcaselect(Channel[i]);
-////          drv.go();
-////          previousMillis[i] = currentMillis[i];
-//        }    // end if
+//void loop(){
+//  while(i<5){
+//    int temp = BTserial.read();
+//    if(temp==255||temp==-1){}
+//    else if(temp == 222){data = 1;}
+//    else{
+//      if(data){
+//        FSR[i]=temp;
+//        Serial.print(FSR[i]);
+//        Serial.print('\t');
+//        i++;
 //      }
-
-        } else { // do nothing
-      }   // end if(data)
-    }     // end switch case
-  }
-  data = 0;
-  i = 0;
-  Serial.println("");  
-
-  for(int n=0;n<5;n++){
-//    Mpos[n]=analogRead(Pin[n]);
-//    Mpos[n]=constrain(Mpos[n],200,580);
-//    Mpos[n]=map(Mpos[n],200,580, 0, 127);
-   
-    if(n==0){BTserial.write(100);}
-//    BTserial.write(Mpos[n]);
-  }
-}
-*/
-
-
-
+//    }
+////
+////      if (FSR[i] > 5){ // if FSR pressed
+//////        tcaselect(Channel[i]);
+//////        delayValue[i]=sensor2delay(FSR[i]);
+//////        currentMillis[i] = millis();
+////        if(currentMillis[i] - previousMillis[i] > delayValue[i]){
+//////          tcaselect(Channel[i]);
+//////          drv.go();
+//////          previousMillis[i] = currentMillis[i];
+////        }    // end if
+////      }
+//  }
+//  data = 0;
+//  i = 0;
+//  Serial.println("");  
+//
+//  for(int n=0;n<5;n++){
+////    Mpos[n]=analogRead(Pin[n]);
+////    Mpos[n]=constrain(Mpos[n],200,580);
+////    Mpos[n]=map(Mpos[n],200,580, 0, 127);
+//   
+//    if(n==0){BTserial.write(100);}
+////    BTserial.write(Mpos[n]);
+//  }
+//}
 
 void loop(){
-  while(i<5){
-    int temp = BTserial.read();
-    if(temp==255||temp==-1){}
-    else if(temp == 222){data = 1;}
-    else{
-      if(data){
-        FSR[i]=temp;
-        Serial.print(FSR[i]);
-        Serial.print('\t');
-        i++;
-      }
+  receiveFSRData();
+  printData();
+  }
+  
+// function to receive blocks of 5 valid bytes
+void receiveFSRData(){
+  static byte ndx = 0;
+  char endMarker = '>';
+  char startMarker = '<';
+  char rc;
+  boolean messageInProgress = false;
+  
+  while(BTserial.available()>0 && messageInProgress  == false){
+    rc = BTserial.read();
+    dataReceived = 1;
+    
+    
     }
-//
-//      if (FSR[i] > 5){ // if FSR pressed
-////        tcaselect(Channel[i]);
-////        delayValue[i]=sensor2delay(FSR[i]);
-////        currentMillis[i] = millis();
-//        if(currentMillis[i] - previousMillis[i] > delayValue[i]){
-////          tcaselect(Channel[i]);
-////          drv.go();
-////          previousMillis[i] = currentMillis[i];
-//        }    // end if
-//      }
+  
   }
-  data = 0;
-  i = 0;
-  Serial.println("");  
 
-  for(int n=0;n<5;n++){
-//    Mpos[n]=analogRead(Pin[n]);
-//    Mpos[n]=constrain(Mpos[n],200,580);
-//    Mpos[n]=map(Mpos[n],200,580, 0, 127);
-   
-    if(n==0){BTserial.write(100);}
-//    BTserial.write(Mpos[n]);
+// function to print data received
+void printData(){
+  if(dataReceived == 1){
+    Serial.print(rc);
+    dataReceived = 0;
+    }
+  
   }
-}
-
 
